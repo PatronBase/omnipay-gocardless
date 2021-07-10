@@ -29,6 +29,11 @@
             "Omnipay\\GoCardless\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Omnipay\\GoCardless\\": "tests/"
+        }
+    },
     "require": {
         "omnipay/common": "^3",
         "symfony/property-access": "^3.2 || ^4.0",

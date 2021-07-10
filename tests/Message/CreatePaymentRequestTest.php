@@ -1,6 +1,6 @@
 <?php
 
-namespace Omnipay\GoCardlessTests\Message;
+namespace Omnipay\GoCardless\Message;
 
 use GoCardlessPro\Client;
 use GoCardlessPro\Resources\Payment;
