@@ -4,9 +4,9 @@ namespace Omnipay\GoCardless;
 
 use GoCardlessPro\Client as GoCardlessClient;
 use GoCardlessPro\Environment;
-use Guzzle\Http\ClientInterface;
 use Omnipay\Common\AbstractGateway as BaseAbstractGateway;
 use Omnipay\Common\Exception\InvalidResponseException;
+use Omnipay\Common\Http\Client as ClientInterface;
 use Omnipay\Common\Message\RequestInterface;
 use Omnipay\GoCardless\Message\AbstractRequest;
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
@@ -110,7 +110,7 @@ abstract class AbstractGateway extends BaseAbstractGateway
         /**
          * @var AbstractRequest $obj
          */
-        $obj = new $class($this->httpClient, $this->httpRequest, $this->gocardless);
+        $obj = new $class($this->httpClient, $this->httpRequest);
 
         return $obj->initialize(array_replace($this->getParameters(), $parameters));
     }

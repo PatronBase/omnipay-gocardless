@@ -4,8 +4,8 @@ namespace Omnipay\GoCardless\Message;
 
 use GoCardlessPro\Client as GoCardlessClient;
 use GoCardlessPro\Core\Exception\GoCardlessProException;
-use Guzzle\Http\ClientInterface;
 use Omnipay\Common\Exception\InvalidRequestException;
+use Omnipay\Common\Http\Client as ClientInterface;
 use Omnipay\Common\Message\AbstractRequest as BaseAbstractRequest;
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
 
@@ -14,8 +14,12 @@ use Symfony\Component\HttpFoundation\Request as HttpRequest;
  */
 abstract class AbstractRequest extends BaseAbstractRequest
 {
-  const LIVE_OAUTH_URL = 'https://connect.gocardless.com/oauth';
-  const TEST_OAUTH_URL = 'https://connect-sandbox.gocardless.com/oauth';
+  /**
+    * Endpoints for live and sandbox gateway api.
+    */
+  protected $endpointLive = 'https://api.gocardless.com';
+  protected $endpointSandbox = 'https://api-sandbox.gocardless.com';
+
   public $sleepTimeout = 60;
 
   /**
@@ -30,10 +34,8 @@ abstract class AbstractRequest extends BaseAbstractRequest
    * @param HttpRequest $httpRequest A Symfony HTTP request object
    * @param GoCardlessClient $gocardless The GoCardless Client
    */
-  public function __construct(ClientInterface $httpClient, HttpRequest $httpRequest, GoCardlessClient $gocardless = null)
+  public function __construct(ClientInterface $httpClient, HttpRequest $httpRequest)
   {
-      $this->gocardless = $gocardless;
-
       parent::__construct($httpClient, $httpRequest);
   }
 
@@ -65,9 +67,9 @@ abstract class AbstractRequest extends BaseAbstractRequest
       }
   }
 
-  public function getOAuthUrl()
+  public function getEndpoint()
   {
-      return $this->getTestMode() ? self::TEST_OAUTH_URL : self::LIVE_OAUTH_URL;
+      return $this->getTestMode() ? $this->endpointSandbox : $this->endpointLive;
   }
 
   public function getMerchantId()
