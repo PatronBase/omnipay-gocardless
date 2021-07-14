@@ -22,7 +22,7 @@ class CreatePaymentRequest extends AbstractRequest
           'metadata'             => $this->getPaymentMetaData(),
           'reference'            => $this->getReference(),
           'session_token'        => $this->getSessionId(),
-          'success_redirect_url' => "https://example.com/pay/confirm",
+          'success_redirect_url' => $this->getReturnUrl(),
         ],
         function ($value) {
             return !empty($value);
