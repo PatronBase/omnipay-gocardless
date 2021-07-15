@@ -21,7 +21,7 @@ class CreatePaymentRequest extends AbstractRequest
           'description'          => $this->getPaymentDescription(),
           'metadata'             => $this->getPaymentMetaData(),
           'reference'            => $this->getReference(),
-          'session_token'        => $this->getSessionId(),
+          'session_token'        => $this->getSessionToken(),
           'success_redirect_url' => $this->getReturnUrl(),
         ],
         function ($value) {

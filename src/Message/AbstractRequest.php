@@ -20,6 +20,7 @@ abstract class AbstractRequest extends BaseAbstractRequest
   protected $endpointLive = 'https://api.gocardless.com';
   protected $endpointSandbox = 'https://api-sandbox.gocardless.com';
   protected $envelope_key   = 'redirect_flows';
+  protected $data_envelope   = 'data';
 
   public $sleepTimeout = 60;
 
@@ -105,6 +106,11 @@ abstract class AbstractRequest extends BaseAbstractRequest
       }
 
       return $this->setParameter('oauthScope', $value);
+  }
+
+  public function getRedirectFlowId()
+  {
+    return $this->getParameter('id');
   }
 
   public function getEmail()
@@ -300,14 +306,14 @@ abstract class AbstractRequest extends BaseAbstractRequest
       return $this->setParameter('eventId', $value);
   }
 
-  public function getSessionId()
+  public function getSessionToken()
   {
-      return $this->getParameter('session_id');
+      return $this->getParameter('session_token');
   }
 
-  public function setSessionId($value)
+  public function setSessionToken($value)
   {
-      return $this->setParameter('session_id', $value);
+      return $this->setParameter('session_token', $value);
   }
 
   public function getSubscriptionId()
