@@ -2,12 +2,13 @@
 
 namespace Omnipay\GoCardless\Message;
 
+use Omnipay\Common\Message\AbstractResponse;
 use Omnipay\Common\Message\RedirectResponseInterface;
 
 /**
- * GoCardless Payment Response
+ * GoCardless Redirect Flow Response
  */
-class PaymentResponse extends AbstractResponse implements RedirectResponseInterface
+class RedirectFlowResponse extends AbstractResponse implements RedirectResponseInterface
 {
     public function isSuccessful()
     {
@@ -21,7 +22,9 @@ class PaymentResponse extends AbstractResponse implements RedirectResponseInterf
 
     public function getTransactionReference()
     {
-        return null;
+        if ($this->isRedirect()) {
+            return $this->data['redirect_flows']['id'];
+        }
     }
 
     public function getMessage()

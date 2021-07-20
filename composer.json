@@ -1,15 +1,17 @@
 {
     "name": "patronbase/omnipay-gocardless",
     "type": "library",
-    "description": "GoCardless payment gateway driver for the Omnipay 3.x payment processing library",
+    "description": "GoCardless payment gateway driver for the Omnipay payment processing library",
     "keywords": [
+        "gocardless",
         "go cardless",
         "gateway",
         "merchant",
         "omnipay",
         "pay",
         "payment",
-        "direct debit"
+        "direct debit",
+        "redirect"
     ],
     "homepage": "https://github.com/PatronBase/omnipay-gocardless",
     "license": "MIT",
@@ -19,9 +21,8 @@
             "email": "dan@firesoft.tech"
         },
         {
-            "name": "Omnipay Contributors",
-            "homepage": "https://github.com/thephpleague/omnipay-braintree/contributors",
-            "role": "Original Base Package"
+            "name": "Leith Caldwell",
+            "email": "leith@codedruids.com"
         }
     ],
     "autoload": {
@@ -35,19 +36,27 @@
         }
     },
     "require": {
-        "omnipay/common": "^3",
-        "symfony/property-access": "^3.2 || ^4.0",
-        "gocardless/gocardless-pro": "^1",
-        "php": "^5.5|^7",
-        "symfony/event-dispatcher": "^2.8"
+        "omnipay/common": "dev-address3-support",
+        "php": "^5.5|^7|^8"
     },
     "require-dev": {
-        "omnipay/tests": "^3",
-        "squizlabs/php_codesniffer": "^3"
+        "omnipay/tests": "dev-address3-support",
+        "squizlabs/php_codesniffer": "^3.5"
     },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/CodeDruids/omnipay-common"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/CodeDruids/omnipay-tests"
+        }
+    ],
     "extra": {
         "branch-alias": {
             "dev-master": "3.0.x-dev"
         }
-    }
+    },
+    "prefer-stable": true
 }
