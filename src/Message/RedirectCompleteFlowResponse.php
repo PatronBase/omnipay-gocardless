@@ -57,4 +57,11 @@ class RedirectCompleteFlowResponse extends AbstractResponse implements RedirectR
             return $this->data['redirect_flows']['links']['mandate'];
         }
     }
+
+    public function getAccessToken()
+    {
+        if ($this->isSuccessful()) {
+            return $this->data['redirect_flows']['access_token'];
+        }
+    }
 }
