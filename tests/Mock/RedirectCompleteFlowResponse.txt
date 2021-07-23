@@ -1,0 +1,28 @@
+HTTP/1.1 200 OK
+Cache-Control: private,no-store,no-cache,must-revalidate,proxy-revalidate
+Pragma: no-cache
+Content-Length: 108
+Content-Type: application/json; charset=utf-8
+Set-Cookie: ASP.NET_SessionId=5g35ug3awdd5pifyctnrveol; path=/; secure; HttpOnly
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: GET, POST, OPTIONS
+Access-Control-Max-Age: 1728000
+Date: Fri, 23 Jun 2021 10:30:00 GMT
+
+{
+    "redirect_flows": {
+       "id": "RE00005H8602K9J5C9V77KQAMHGH8FDB",
+       "description": "Just a unit test",
+       "session_token": "session_ca853718-99ea-4cfd-86fd-c533ef1d5a3b",
+       "scheme": null,
+       "success_redirect_url": "http://localhost/success",
+       "created_at": "2021-07-23T10:30:00.282Z",
+       "links": {
+          "creditor": "CR000035V20049",
+          "mandate": "MD0000TWJWRFHG",
+          "customer": "CU0000X30K4B9N",
+          "customer_bank_account": "BA0000TCWMHXH3"
+       }
+    }
+}

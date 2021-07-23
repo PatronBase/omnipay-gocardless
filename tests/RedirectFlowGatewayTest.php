@@ -15,6 +15,11 @@ class RedirectFlowGatewayTest extends GatewayTestCase
      */
     protected $gateway;
 
+    /**
+      * @var array
+      */
+    protected $options;
+
     public function setUp()
     {
         parent::setUp();
@@ -24,17 +29,25 @@ class RedirectFlowGatewayTest extends GatewayTestCase
             $this->getHttpRequest()
         );
 
-        $this->gateway->setRedirectFlowId('RE123456');
-        $this->gateway->setSessionToken('sessionToken');
-        $this->gateway->setMandateId('123456');
+        $this->options = array(
+            'sessionToken' => 'session_ca853718-99ea-4cfd-86fd-c533ef1d5a3b',
+            'returnUrl' => 'http://localhost/success',
+            'description'  => 'Just a unit test'
+        );
     }
 
     public function testRedirectFlow()
     {
-        $request = $this->gateway->redirectFlow();
-        $this->assertInstanceOf(RedirectFlowRequest::class, $request);
+        $this->setMockHttpResponse('RedirectFlowResponse.txt');
+        $response = $this->gateway->redirectFlow($this->options)->send();
+
+        $this->assertSame('There was an error', $response->getMessage());
+        $this->assertSame('RE123456', $response->getTransactionReference());
+        $this->assertSame('RE123456', $response->getRedirectUrl());
     }
 
+
+/*
     public function testCompleteRedirectFlow()
     {
         $request = $this->gateway->completeRedirectFlow();
@@ -53,5 +66,6 @@ class RedirectFlowGatewayTest extends GatewayTestCase
         $request = $this->gateway->purchase();
         $this->assertInstanceOf(PurchaseRequest::class, $request);
     }
+*/
 
 }

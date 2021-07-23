@@ -28,19 +28,4 @@ abstract class AbstractGateway extends BaseAbstractGateway
     {
         return $this->getParameter('access_token');
     }
-
-    public function setRedirectFlowId($value)
-    {
-        return $this->setParameter('redirectFlowId', $value);
-    }
-
-    public function setSessionToken($value)
-    {
-        return $this->setParameter('session_token', $value);
-    }
-
-    public function setMandateId($value)
-    {
-        return $this->setParameter('mandateId', $value);
-    }
 }
