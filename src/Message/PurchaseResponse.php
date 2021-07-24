@@ -13,13 +13,13 @@ class PurchaseResponse extends AbstractResponse
     {
         $status = $this->getStatus();
         return !$this->isError() && isset($this->data['payments'])
-            && ($status == 'submitted' || $status == 'confirmed' || $status == 'paid_out');
+            && ($status == 'confirmed' || $status == 'paid_out');
     }
 
     public function isPending()
     {
         $status = $this->getStatus();
-        return $status == 'pending_customer_approval' || $status == 'pending_submission';
+        return $status == 'pending_customer_approval' || $status == 'pending_submission' || $status == 'submitted';
     }
 
     public function isCancelled()

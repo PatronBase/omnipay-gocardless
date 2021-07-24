@@ -21,11 +21,11 @@ abstract class AbstractGateway extends BaseAbstractGateway
 
     public function setAccessToken($value)
     {
-        return $this->setParameter('access_token', $value);
+        return $this->setParameter('accessToken', $value);
     }
 
     public function getAccessToken()
     {
-        return $this->getParameter('access_token');
+        return $this->getParameter('accessToken');
     }
 }
