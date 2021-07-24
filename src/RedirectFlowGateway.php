@@ -17,6 +17,13 @@ class RedirectFlowGateway extends AbstractGateway
         return 'GoCardless Redirect Flow';
     }
 
+    // @todo note: might need to do this/add redirectFlowId accessors in order to get superclass unit tests working
+    //             but can focus on those after getting the core tests done
+    // public function getDefaultParameters()
+    // {
+    //     return parent::getDefaultParameters() + ['redirectFlowId' => null];
+    // }
+
     // @todo authorize?
     // @todo completeAuthorize?
     // @todo createCard?
