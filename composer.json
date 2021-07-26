@@ -41,7 +41,8 @@
     },
     "require-dev": {
         "omnipay/tests": "dev-address3-support",
-        "squizlabs/php_codesniffer": "^3.5"
+        "squizlabs/php_codesniffer": "^3.5",
+        "symfony/psr-http-message-bridge": "~1.1.0"
     },
     "repositories": [
         {

@@ -9,6 +9,8 @@ use Omnipay\GoCardless\Message\RedirectCompleteFlowResponse;
 use Omnipay\GoCardless\Message\RedirectFlowRequest;
 use Omnipay\GoCardless\Message\RedirectFlowResponse;
 use Omnipay\GoCardless\Message\PurchaseRequest;
+use Omnipay\GoCardless\Message\WebhookEventNotification;
+use Omnipay\GoCardless\Message\WebhookNotification;
 
 class RedirectFlowGateway extends AbstractGateway
 {
@@ -87,6 +89,17 @@ class RedirectFlowGateway extends AbstractGateway
      */
     public function acceptNotification(array $parameters = array())
     {
-        throw new RuntimeException('Not implemented yet');
+        return $this->createRequest(WebhookEventNotification::class, $parameters);
+    }
+
+    /**
+     * Parse batch of webhooks to validate and provide events for {@see self::acceptNotification()}
+     *
+     * @todo do we both with parameters?
+     */
+    public function acceptNotificationBatch(array $parameters = array())
+    {
+        return $this->createRequest(WebhookNotification::class, $parameters);
+    }
     }
 }

@@ -1,0 +1,7 @@
+POST https://example.com/webhooks HTTP/1.1
+User-Agent: gocardless-webhook-service/1.1
+Origin: https://api-sandbox.gocardless.com
+Content-Type: application/json
+Webhook-Signature: 8d625e2359a8a2f9161e0ec9a534a9f75c47aa7b305b18685929ad58f08d2efc
+
+{"events":[{"id":"EV123","created_at":"2014-08-03T12:00:00.000Z","action":"confirmed","resource_type":"payments","links":{"payment":"PM123"},"details":{"origin":"gocardless","cause":"payment_confirmed","description":"Payment was confirmed as collected"}},{"id":"EV456","created_at":"2014-08-03T12:00:00.000Z","action":"failed","resource_type":"payments","links":{"payment":"PM456"},"details":{"origin":"bank","cause":"mandate_cancelled","description":"Customer cancelled the mandate at their bank branch.","scheme":"bacs","reason_code":"ARUDD-1"}}],"meta":{"webhook_id":"WB123"}}
