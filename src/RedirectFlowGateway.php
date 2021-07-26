@@ -101,5 +101,14 @@ class RedirectFlowGateway extends AbstractGateway
     {
         return $this->createRequest(WebhookNotification::class, $parameters);
     }
+
+    /**
+     * Fetch the details for a specific event
+     */
+    public function fetchEvent(array $parameters = array())
+    {
+        throw new RuntimeException('Not implemented yet');
+        // @see https://developer.gocardless.com/api-reference/#core-endpoints-events
+        // return $this->createRequest(FetchEventRequest::class, $parameters);
     }
 }
