@@ -94,12 +94,37 @@ class RedirectFlowGatewayTest extends GatewayTestCase
 
     public function testCompleteRedirectFlowError()
     {
-        throw new Exception('not implemented yet');
+        $this->setMockHttpResponse('RedirectCompleteFlowResponseError.txt');
+        $options = [
+            'redirectFlowId' => 'RE123',
+            'sessionToken' => 'SESS_wSs0uGYMISxzqOBq',
+        ];
+
+        $response = $this->gateway->completeRedirectFlow($options)->send();
+
+        $this->assertFalse($response->isSuccessful());
+        $this->assertFalse($response->isRedirect());
+        $this->assertSame('Redirect flow incomplete', $response->getMessage());
+
     }
 
     public function testPurchase()
     {
-        throw new Exception('not implemented yet');
+        $this->setMockHttpResponse('PurchaseResponseSuccess.txt');
+        $options = [
+            'card'         => $this->getValidCard(),
+            'description'  => 'Wine boxes',
+            'amount'       => 500,
+            'currency'     => 'GBP',
+            'returnUrl'    => 'https://example.com/pay/confirm',
+            'sessionToken' => 'SESS_wSs0uGYMISxzqOBq',
+            'links' => ['mandateId'    => 'MD123']
+        ];
+
+        $response = $this->gateway->purchase($options)->send();
+
+        $this->assertTrue($response->isSuccessful());
+        $this->assertFalse($response->isRedirect());
     }
 
     public function testPurchaseFailed()

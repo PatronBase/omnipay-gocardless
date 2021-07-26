@@ -1,0 +1,28 @@
+HTTP/1.1 200 OK
+Cache-Control: private,no-store,no-cache,must-revalidate,proxy-revalidate
+Pragma: no-cache
+Content-Length: 108
+Content-Type: application/json; charset=utf-8
+Set-Cookie: ASP.NET_SessionId=5g35ug3awdd5pifyctnrveol; path=/; secure; HttpOnly
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: GET, POST, OPTIONS
+Access-Control-Max-Age: 1728000
+Date: Thu, 23 Oct 2014 2:10:06 GMT
+
+{
+    "error": {
+      "message": "Redirect flow incomplete",
+      "errors": [
+        {
+          "field": "prefilled_bank_account",
+          "message": "\"family_name\", \"given_name\" are not permitted keys.",
+          "request_pointer": "/redirect_flows/prefilled_bank_account"
+        }
+      ],
+      "documentation_url": "https://developer.gocardless.com/api-reference#invalid_document_structure",
+      "type": "invalid_api_usage",
+      "request_id": "A0A00000AA0AA_0A00000A0A00_00A00000_0A00A0000",
+      "code": "400"
+    }
+}
