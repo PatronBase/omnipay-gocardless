@@ -6,6 +6,7 @@ use Exception;
 use GuzzleHttp\Psr7\Message;
 use GuzzleHttp\Psr7\ServerRequest;
 use Omnipay\Common\Message\NotificationInterface;
+use Omnipay\GoCardless\Message\RedirectFlowRequest;
 use Omnipay\GoCardless\Message\WebhookEventNotification;
 use Omnipay\GoCardless\Message\WebhookNotification;
 use Omnipay\GoCardless\RedirectFlowGateway;
@@ -31,7 +32,7 @@ class RedirectFlowGatewayTest extends GatewayTestCase
         parent::setUp();
 
         $this->gateway = new RedirectFlowGateway($this->getHttpClient(), $this->getHttpRequest());
-        $this->gateway->initialize(['accessToken' => 'IamAtestToken']);
+        $this->gateway->initialize(['accessToken' => 'IamAtestToken', 'testMode' => true]);
     }
 
     public function testRedirectFlow()
@@ -105,44 +106,115 @@ class RedirectFlowGatewayTest extends GatewayTestCase
         $this->assertFalse($response->isSuccessful());
         $this->assertFalse($response->isRedirect());
         $this->assertSame('Redirect flow incomplete', $response->getMessage());
-
     }
 
     public function testPurchase()
     {
         $this->setMockHttpResponse('PurchaseResponseSuccess.txt');
         $options = [
-            'card'         => $this->getValidCard(),
-            'description'  => 'Wine boxes',
-            'amount'       => 500,
-            'currency'     => 'GBP',
-            'returnUrl'    => 'https://example.com/pay/confirm',
+            'amount' => 100,
+            'charge_date' => "2014-05-19",
+            'currency' => 'GBP',
+            'description' => 'Wine boxes',
+            'mandateId' => 'MD123',
+            'metadata' => ["order_dispatch_date" => "2014-05-22"],
+            'returnUrl' => 'https://example.com/pay/confirm',
             'sessionToken' => 'SESS_wSs0uGYMISxzqOBq',
-            'links' => ['mandateId'    => 'MD123']
+            'transactionId' => 'WINEBOX001',
         ];
 
         $response = $this->gateway->purchase($options)->send();
 
         $this->assertTrue($response->isSuccessful());
+        $this->assertFalse($response->isPending());
+        $this->assertFalse($response->isCancelled());
         $this->assertFalse($response->isRedirect());
+        $this->assertFalse($response->isError());
+        $this->assertSame('PM123', $response->getTransactionReference());
+        $this->assertNull($response->getMessage());
+        $this->assertSame('MD123', $response->getMandateId());
+        $this->assertSame('confirmed', $response->getCode());
+        $this->assertSame('confirmed', $response->getStatus());
     }
 
+    // formed correctly, just failed
     public function testPurchaseFailed()
     {
-        // formed correctly, just failed
-        throw new Exception('not implemented yet');
+        $this->setMockHttpResponse('PurchaseResponseCancelled.txt');
+        $options = [
+            'amount' => 100,
+            'charge_date' => "2014-05-19",
+            'currency' => 'GBP',
+            'description' => 'Wine boxes',
+            'mandateId' => 'MD123',
+            'metadata' => ["order_dispatch_date" => "2014-05-22"],
+            'returnUrl' => 'https://example.com/pay/confirm',
+            'sessionToken' => 'SESS_wSs0uGYMISxzqOBq',
+            'transactionId' => 'WINEBOX001',
+        ];
+
+        $response = $this->gateway->purchase($options)->send();
+
+        $this->assertFalse($response->isSuccessful());
+        $this->assertFalse($response->isPending());
+        $this->assertTrue($response->isCancelled());
+        $this->assertFalse($response->isRedirect());
+        $this->assertFalse($response->isError());
+        $this->assertSame('PM123', $response->getTransactionReference());
+        $this->assertNull($response->getMessage());
+        $this->assertNull($response->getMandateId());
+        $this->assertSame('cancelled', $response->getCode());
+        $this->assertSame('cancelled', $response->getStatus());
     }
 
+    // formed incorrectly
     public function testPurchaseError()
     {
-        // formed incorrectly
-        throw new Exception('not implemented yet');
+        $this->setMockHttpResponse('PurchaseResponseError.txt');
+        $options = [
+            'amount' => 100,
+            'charge_date' => "2014-05-19",
+            'currency' => 'GBP',
+            'description' => 'Wine boxes',
+            'mandateId' => 'MD123',
+            // this is wrong, value must be a string
+            'metadata' => ["order_dispatch_date" => 20140522],
+            'returnUrl' => 'https://example.com/pay/confirm',
+            'sessionToken' => 'SESS_wSs0uGYMISxzqOBq',
+            'transactionId' => 'WINEBOX001',
+        ];
+
+        $response = $this->gateway->purchase($options)->send();
+
+        $this->assertFalse($response->isSuccessful());
+        $this->assertFalse($response->isPending());
+        $this->assertFalse($response->isCancelled());
+        $this->assertFalse($response->isRedirect());
+        $this->assertTrue($response->isError());
+        $this->assertNull($response->getTransactionReference());
+        $this->assertSame('One of your parameters was incorrectly typed', $response->getMessage());
+        $this->assertNull($response->getMandateId());
+        $this->assertSame('422', $response->getCode());
+        $this->assertSame('invalid_api_usage', $response->getStatus());
     }
 
     public function testPurchaseNoMandateId()
     {
-        // successfully switch to redirect flow
-        throw new Exception('not implemented yet');
+        $options = [
+            'amount' => 100,
+            'charge_date' => "2014-05-19",
+            'currency' => 'GBP',
+            'description' => 'Wine boxes',
+            // 'mandateId' => 'MD123',
+            'metadata' => ["order_dispatch_date" => "2014-05-22"],
+            'returnUrl' => 'https://example.com/pay/confirm',
+            'sessionToken' => 'SESS_wSs0uGYMISxzqOBq',
+            'transactionId' => 'WINEBOX001',
+        ];
+
+        $request = $this->gateway->purchase($options);
+
+        $this->assertInstanceOf(RedirectFlowRequest::class, $request);
     }
 
     public function testCompletePurchase()
@@ -153,7 +225,7 @@ class RedirectFlowGatewayTest extends GatewayTestCase
 
     public function testCompletePurchaseNoMandateId()
     {
-        // successfull run complete redirect flow and then run pruchase
+        // successfully run complete redirect flow and then run purchase
         throw new Exception('not implemented yet');
     }
 

@@ -18,7 +18,7 @@ Date: Thu, 23 Oct 2014 2:10:06 GMT
     "amount": 100,
     "description": null,
     "currency": "GBP",
-    "status": "confirmed",
+    "status": "cancelled",
     "reference": "WINEBOX001",
     "metadata": {
       "order_dispatch_date": "2014-05-22"
@@ -31,7 +31,6 @@ Date: Thu, 23 Oct 2014 2:10:06 GMT
       "estimated_exchange_rate": "1.1234567890"
     },
     "links": {
-      "mandate": "MD123",
       "creditor": "CR123"
     },
     "retry_if_possible": false
