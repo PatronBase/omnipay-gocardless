@@ -44,10 +44,46 @@ class PurchaseResponse extends AbstractResponse
         }
     }
 
+    public function getChargeDate()
+    {
+        if (!$this->isError()) {
+            return $this->data['payments']['charge_date'];
+        }
+    }
+
+    // @todo do we need to switch this to format the amount like Omnipay?
+    public function getAmount()
+    {
+        if (!$this->isError()) {
+            return $this->data['payments']['amount'];
+        }
+    }
+
+    public function getDescription()
+    {
+        if ($this->isSuccessful() || $this->isPending()) {
+            return $this->data['payments']['description'];
+        }
+    }
+
+    public function getCurrency()
+    {
+        if (!$this->isError()) {
+            return $this->data['payments']['currency'];
+        }
+    }
+
     public function getMessage()
     {
         if ($this->isError()) {
             return $this->data['error']['message'];
+        }
+    }
+
+    public function getErrors()
+    {
+        if ($this->isError()) {
+            return $this->data['error']['errors'];
         }
     }
 
@@ -68,8 +104,22 @@ class PurchaseResponse extends AbstractResponse
 
     public function getMetaData()
     {
-        if ($this->isSuccessful() || $this->isPending()) {
+        if (!$this->isError()) {
             return $this->data['payments']['metadata'];
+        }
+    }
+
+    public function getAmountRefunded()
+    {
+        if (!$this->isError()) {
+            return $this->data['payments']['amount_refunded'];
+        }
+    }
+
+    public function getFx()
+    {
+        if (!$this->isError()) {
+            return $this->data['payments']['fx'];
         }
     }
 
