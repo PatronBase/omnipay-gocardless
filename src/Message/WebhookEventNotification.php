@@ -114,6 +114,17 @@ class WebhookEventNotification extends AbstractRequest implements NotificationIn
     }
 
     /**
+     * @return null|mixed
+     */
+    public function getMetaData()
+    {
+        $data = $this->getData();
+        if (isset($data['metadata'])) {
+            return $data['metadata'];
+        }
+    }
+
+    /**
      * @return null|string
      */
     public function getType()
@@ -121,6 +132,17 @@ class WebhookEventNotification extends AbstractRequest implements NotificationIn
         $data = $this->getData();
         if (isset($data['resource_type'])) {
             return $data['resource_type'];
+        }
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getPaymentId()
+    {
+        $data = $this->getData();
+        if (isset($data['links']['payment'])) {
+            return $data['links']['payment'];
         }
     }
 
