@@ -113,15 +113,18 @@ class RedirectFlowGatewayTest extends GatewayTestCase
     {
         $this->setMockHttpResponse('PurchaseResponseSuccess.txt');
         $options = [
-            'amount' => 100,
-            'charge_date' => "2014-05-19",
-            'currency' => 'GBP',
-            'description' => 'Wine boxes',
-            'mandateId' => 'MD123',
-            'metadata' => ["order_dispatch_date" => "2014-05-22"],
-            'returnUrl' => 'https://example.com/pay/confirm',
-            'sessionToken' => 'SESS_wSs0uGYMISxzqOBq',
+            'amount'        => 100,
+            'appFeeAmount'  => 10,
+            'charge_date'   => "2014-05-19",
+            'currency'      => 'GBP',
+            'description'   => 'Wine boxes',
+            'mandateId'     => 'MD123',
+            'metadata'      => ["order_dispatch_date" => "2014-05-22"],
+            'returnUrl'     => 'https://example.com/pay/confirm',
+            'sessionToken'  => 'SESS_wSs0uGYMISxzqOBq',
             'transactionId' => 'WINEBOX001',
+            "retry_if_possible" => false,
+            "customPaymentReferencesEnabled" => false,
         ];
 
         $response = $this->gateway->purchase($options)->send();
@@ -132,9 +135,22 @@ class RedirectFlowGatewayTest extends GatewayTestCase
         $this->assertFalse($response->isRedirect());
         $this->assertFalse($response->isError());
         $this->assertSame('PM123', $response->getTransactionReference());
+        $this->assertSame('2014-05-21', $response->getChargeDate());
+        $this->assertSame(100, $response->getAmount());
+        $this->assertSame('GBP', $response->getCurrency());
+        $this->assertNull($response->getDescription());
         $this->assertNull($response->getMessage());
         $this->assertSame('MD123', $response->getMandateId());
+        $this->assertSame('CR123', $response->getCreditorId());
         $this->assertSame(["order_dispatch_date" => '2014-05-22'], $response->getMetaData());
+        $this->assertSame(0, $response->getAmountRefunded());
+        $this->assertSame([
+                            "fx_currency" => "EUR",
+                            "fx_amount" => null,
+                            "exchange_rate" => null,
+                            "estimated_exchange_rate" => "1.1234567890"
+                          ], $response->getFx());
+        $this->assertFalse($response->getRetryIfPossible());
         $this->assertSame('confirmed', $response->getCode());
         $this->assertSame('confirmed', $response->getStatus());
     }
@@ -163,11 +179,23 @@ class RedirectFlowGatewayTest extends GatewayTestCase
         $this->assertFalse($response->isRedirect());
         $this->assertFalse($response->isError());
         $this->assertSame('PM123', $response->getTransactionReference());
+        $this->assertSame('2014-05-21', $response->getChargeDate());
+        $this->assertSame(100, $response->getAmount());
+        $this->assertSame('GBP', $response->getCurrency());
+        $this->assertSame('cancelled', $response->getStatus());
+        $this->assertSame('WINEBOX001', $response->getReference());
+        $this->assertSame(["order_dispatch_date" => '2014-05-22'], $response->getMetaData());
+        $this->assertSame(0, $response->getAmountRefunded());
+        $this->assertSame([
+                            "fx_currency" => "EUR",
+                            "fx_amount" => null,
+                            "exchange_rate" => null,
+                            "estimated_exchange_rate" => "1.1234567890"
+                          ], $response->getFx());
+        $this->assertNull($response->getDescription());
         $this->assertNull($response->getMessage());
         $this->assertNull($response->getMandateId());
-        $this->assertNull($response->getMetaData());
         $this->assertSame('cancelled', $response->getCode());
-        $this->assertSame('cancelled', $response->getStatus());
     }
 
     // formed incorrectly
@@ -196,6 +224,7 @@ class RedirectFlowGatewayTest extends GatewayTestCase
         $this->assertTrue($response->isError());
         $this->assertNull($response->getTransactionReference());
         $this->assertSame('One of your parameters was incorrectly typed', $response->getMessage());
+        $this->assertNotNull($response->getErrors());
         $this->assertNull($response->getMandateId());
         $this->assertNull($response->getMetaData());
         $this->assertSame('422', $response->getCode());
@@ -224,13 +253,67 @@ class RedirectFlowGatewayTest extends GatewayTestCase
     public function testCompletePurchase()
     {
         // includes mandate, is the same as purchase
-        throw new Exception('not implemented yet');
+        $this->setMockHttpResponse('PurchaseResponseSuccess.txt');
+        $options = [
+            'card'         => $this->getValidCard(),
+            'description'  => 'Tickets',
+            'amount'       => 100,
+            'currency'     => 'GBP',
+            'returnUrl'    => 'https://example.com/pay/confirm',
+            'sessionToken' => 'SESS_wSs0uGYMISxzqOBq',
+            'mandateId'    => 'MD123'
+        ];
+
+        $response = $this->gateway->completePurchase($options)->send();
+
+        $this->assertTrue($response->isSuccessful());
+        $this->assertFalse($response->isPending());
+        $this->assertFalse($response->isCancelled());
+        $this->assertFalse($response->isRedirect());
+        $this->assertFalse($response->isError());
+        $this->assertSame('PM123', $response->getTransactionReference());
+        $this->assertSame('2014-05-21', $response->getChargeDate());
+        $this->assertSame(100, $response->getAmount());
+        $this->assertSame('GBP', $response->getCurrency());
+        $this->assertNull($response->getDescription());
+        $this->assertNull($response->getMessage());
+        $this->assertSame('MD123', $response->getMandateId());
+        $this->assertSame('CR123', $response->getCreditorId());
+        $this->assertSame(["order_dispatch_date" => '2014-05-22'], $response->getMetaData());
+        $this->assertSame(0, $response->getAmountRefunded());
+        $this->assertSame([
+                            "fx_currency" => "EUR",
+                            "fx_amount" => null,
+                            "exchange_rate" => null,
+                            "estimated_exchange_rate" => "1.1234567890"
+                          ], $response->getFx());
+        $this->assertFalse($response->getRetryIfPossible());
+        $this->assertSame('confirmed', $response->getCode());
+        $this->assertSame('confirmed', $response->getStatus());
     }
 
     public function testCompletePurchaseNoMandateId()
     {
-        // successfully run complete redirect flow and then run purchase
-        throw new Exception('not implemented yet');
+        // successfull run complete redirect flow and then run purchase
+        $this->setMockHttpResponse('RedirectFlowResponseSuccess.txt');
+        $options = [
+            'card'         => $this->getValidCard(),
+            'description'  => 'Wine boxes',
+            'amount'       => 500,
+            'currency'     => 'GBP',
+            'returnUrl'    => 'https://example.com/pay/confirm',
+            'sessionToken' => 'SESS_wSs0uGYMISxzqOBq'
+        ];
+
+        $response = $this->gateway->purchase($options)->send();
+
+        $this->assertFalse($response->isSuccessful());
+        $this->assertTrue($response->isRedirect());
+        $this->assertSame('RE123', $response->getTransactionReference());
+        $this->assertNull($response->getMessage());
+        $this->assertSame('http://pay.gocardless.com/flow/RE123', $response->getRedirectUrl());
+        $this->assertSame('GET', $response->getRedirectMethod());
+        $this->assertNull($response->getRedirectData());
     }
 
     public function testAcceptNotification()
