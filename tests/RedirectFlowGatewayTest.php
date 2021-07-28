@@ -253,6 +253,7 @@ class RedirectFlowGatewayTest extends GatewayTestCase
         $this->assertSame('EV123', $response->getTransactionReference());
         $this->assertSame(NotificationInterface::STATUS_COMPLETED, $response->getTransactionStatus());
         $this->assertSame('payments', $response->getType());
+        $this->assertSame('PM123', $response->getPaymentId());
     }
 
     public function testAcceptNotificationFailure()
@@ -274,6 +275,7 @@ class RedirectFlowGatewayTest extends GatewayTestCase
         $this->assertSame('EV456', $request->getTransactionReference());
         $this->assertSame(NotificationInterface::STATUS_FAILED, $request->getTransactionStatus());
         $this->assertSame('payments', $request->getType());
+        $this->assertSame('PM456', $request->getPaymentId());
     }
 
     public function testAcceptNotificationBatch()

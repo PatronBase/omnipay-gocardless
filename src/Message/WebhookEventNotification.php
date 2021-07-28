@@ -125,6 +125,17 @@ class WebhookEventNotification extends AbstractRequest implements NotificationIn
     }
 
     /**
+     * @return null|string
+     */
+    public function getPaymentId()
+    {
+        $data = $this->getData();
+        if (isset($data['links']['payment'])) {
+            return $data['links']['payment'];
+        }
+    }
+
+    /**
      * Implemented as part of {@see AbstractRequest}} for legacy support
      */
     public function sendData($data)
