@@ -1,0 +1,7 @@
+POST https://example.com/webhooks HTTP/1.1
+User-Agent: gocardless-webhook-service/1.1
+Origin: https://api-sandbox.gocardless.com
+Content-Type: application/json
+Webhook-Signature: 42aa2860ecb559d16f9ecbe7e590ffeee2a992a03008be1deca22d97865693a7
+
+{"events":[{"id":"EV123","created_at":"2014-08-04T12:00:00.000Z","action":"paid","resource_type":"payouts","links":{"payout":"PO123"}}],"meta":{"webhook_id":"WB123"}}

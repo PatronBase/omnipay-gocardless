@@ -58,7 +58,7 @@ abstract class AbstractRequest extends BaseAbstractRequest
                 'Authorization' => 'Bearer '.$this->getAccessToken(),
                 'GoCardless-Version' => '2015-07-06',
             ),
-            json_encode($data)
+            $data === null ? null : json_encode($data)
         );
 
         return $response;

@@ -4,6 +4,8 @@ namespace Omnipay\GoCardless;
 
 use Omnipay\Common\Exception\RuntimeException;
 use Omnipay\GoCardless\AbstractGateway;
+use Omnipay\GoCardless\Message\FetchEventRequest;
+use Omnipay\GoCardless\Message\FetchPurchaseRequest;
 use Omnipay\GoCardless\Message\RedirectCompleteFlowRequest;
 use Omnipay\GoCardless\Message\RedirectCompleteFlowResponse;
 use Omnipay\GoCardless\Message\RedirectFlowRequest;
@@ -103,12 +105,18 @@ class RedirectFlowGateway extends AbstractGateway
     }
 
     /**
-     * Fetch the details for a specific event
+     * Fetch the details for a specific event (webhook notification)
      */
     public function fetchEvent(array $parameters = array())
     {
-        throw new RuntimeException('Not implemented yet');
-        // @see https://developer.gocardless.com/api-reference/#core-endpoints-events
-        // return $this->createRequest(FetchEventRequest::class, $parameters);
+        return $this->createRequest(FetchEventRequest::class, $parameters);
+    }
+
+    /**
+     * Fetch the details for a specific payment
+     */
+    public function fetchPurchase(array $parameters = array())
+    {
+        return $this->createRequest(FetchPurchaseRequest::class, $parameters);
     }
 }

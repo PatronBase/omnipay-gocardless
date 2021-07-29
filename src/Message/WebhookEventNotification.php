@@ -114,6 +114,17 @@ class WebhookEventNotification extends AbstractRequest implements NotificationIn
     }
 
     /**
+     * @return null|mixed
+     */
+    public function getMetaData()
+    {
+        $data = $this->getData();
+        if (isset($data['metadata'])) {
+            return $data['metadata'];
+        }
+    }
+
+    /**
      * @return null|string
      */
     public function getType()

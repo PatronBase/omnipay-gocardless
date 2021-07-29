@@ -58,6 +58,13 @@ class PurchaseResponse extends AbstractResponse
         }
     }
 
+    public function getMetaData()
+    {
+        if ($this->isSuccessful() || $this->isPending()) {
+            return $this->data['payments']['metadata'];
+        }
+    }
+
     public function getCode()
     {
         return $this->isError() ? $this->data['error']['code'] : $this->getStatus();
