@@ -92,6 +92,7 @@ class WebhookEventNotification extends AbstractRequest implements NotificationIn
                     return NotificationInterface::STATUS_COMPLETED;
                 case 'pending_customer_approval':
                 case 'pending_submission':
+                case 'submitted':
                     return NotificationInterface::STATUS_PENDING;
                 case 'cancelled':
                 case 'charged_back':
@@ -100,9 +101,8 @@ class WebhookEventNotification extends AbstractRequest implements NotificationIn
                     return NotificationInterface::STATUS_FAILED;
                 default:
                     // no state change, do nothing? other events from docs:
-                    // created
+                    // created -- pending?
                     // customer_approval_granted -- pending?
-                    // submitted -- completed? pending?
                     // chargeback_cancelled
                     // late_failure_settled -- failure?
                     // chargeback_settled -- failure?
