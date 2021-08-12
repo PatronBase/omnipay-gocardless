@@ -107,13 +107,16 @@ class RedirectFlowGatewayTest extends GatewayTestCase
         $this->assertFalse($response->isSuccessful());
         $this->assertFalse($response->isRedirect());
         $this->assertSame('Redirect flow incomplete', $response->getMessage());
+        $this->assertNull($response->getTransactionReference());
+        $this->assertNull($response->getRedirectUrl());
+        $this->assertNull($response->getMandateId());
     }
 
     public function testPurchase()
     {
         $this->setMockHttpResponse('PurchaseResponseSuccess.txt');
         $options = [
-            'amount'        => 100,
+            'amount'        => '1.00',
             'appFeeAmount'  => 10,
             'charge_date'   => "2014-05-19",
             'currency'      => 'GBP',
@@ -144,12 +147,15 @@ class RedirectFlowGatewayTest extends GatewayTestCase
         $this->assertSame('CR123', $response->getCreditorId());
         $this->assertSame(["order_dispatch_date" => '2014-05-22'], $response->getMetaData());
         $this->assertSame(0, $response->getAmountRefunded());
-        $this->assertSame([
-                            "fx_currency" => "EUR",
-                            "fx_amount" => null,
-                            "exchange_rate" => null,
-                            "estimated_exchange_rate" => "1.1234567890"
-                          ], $response->getFx());
+        $this->assertSame(
+            [
+                "fx_currency" => "EUR",
+                "fx_amount" => null,
+                "exchange_rate" => null,
+                "estimated_exchange_rate" => "1.1234567890"
+            ],
+            $response->getFx()
+        );
         $this->assertFalse($response->getRetryIfPossible());
         $this->assertSame('confirmed', $response->getCode());
         $this->assertSame('confirmed', $response->getStatus());
@@ -160,7 +166,7 @@ class RedirectFlowGatewayTest extends GatewayTestCase
     {
         $this->setMockHttpResponse('PurchaseResponseCancelled.txt');
         $options = [
-            'amount' => 100,
+            'amount' => '1.00',
             'charge_date' => "2014-05-19",
             'currency' => 'GBP',
             'description' => 'Wine boxes',
@@ -186,12 +192,15 @@ class RedirectFlowGatewayTest extends GatewayTestCase
         $this->assertSame('WINEBOX001', $response->getReference());
         $this->assertSame(["order_dispatch_date" => '2014-05-22'], $response->getMetaData());
         $this->assertSame(0, $response->getAmountRefunded());
-        $this->assertSame([
-                            "fx_currency" => "EUR",
-                            "fx_amount" => null,
-                            "exchange_rate" => null,
-                            "estimated_exchange_rate" => "1.1234567890"
-                          ], $response->getFx());
+        $this->assertSame(
+            [
+                "fx_currency" => "EUR",
+                "fx_amount" => null,
+                "exchange_rate" => null,
+                "estimated_exchange_rate" => "1.1234567890"
+            ],
+            $response->getFx()
+        );
         $this->assertNull($response->getDescription());
         $this->assertNull($response->getMessage());
         $this->assertNull($response->getMandateId());
@@ -203,7 +212,7 @@ class RedirectFlowGatewayTest extends GatewayTestCase
     {
         $this->setMockHttpResponse('PurchaseResponseError.txt');
         $options = [
-            'amount' => 100,
+            'amount' => '1.00',
             'charge_date' => "2014-05-19",
             'currency' => 'GBP',
             'description' => 'Wine boxes',
@@ -234,7 +243,7 @@ class RedirectFlowGatewayTest extends GatewayTestCase
     public function testPurchaseNoMandateId()
     {
         $options = [
-            'amount' => 100,
+            'amount' => '1.00',
             'charge_date' => "2014-05-19",
             'currency' => 'GBP',
             'description' => 'Wine boxes',
@@ -256,12 +265,11 @@ class RedirectFlowGatewayTest extends GatewayTestCase
         $this->setMockHttpResponse('PurchaseResponseSuccess.txt');
         $options = [
             'card'         => $this->getValidCard(),
-            'description'  => 'Tickets',
-            'amount'       => 100,
+            'amount'       => '1.00',
             'currency'     => 'GBP',
             'returnUrl'    => 'https://example.com/pay/confirm',
             'sessionToken' => 'SESS_wSs0uGYMISxzqOBq',
-            'mandateId'    => 'MD123'
+            'mandateId'    => 'MD123',
         ];
 
         $response = $this->gateway->completePurchase($options)->send();
@@ -281,12 +289,15 @@ class RedirectFlowGatewayTest extends GatewayTestCase
         $this->assertSame('CR123', $response->getCreditorId());
         $this->assertSame(["order_dispatch_date" => '2014-05-22'], $response->getMetaData());
         $this->assertSame(0, $response->getAmountRefunded());
-        $this->assertSame([
-                            "fx_currency" => "EUR",
-                            "fx_amount" => null,
-                            "exchange_rate" => null,
-                            "estimated_exchange_rate" => "1.1234567890"
-                          ], $response->getFx());
+        $this->assertSame(
+            [
+                "fx_currency" => "EUR",
+                "fx_amount" => null,
+                "exchange_rate" => null,
+                "estimated_exchange_rate" => "1.1234567890"
+            ],
+            $response->getFx()
+        );
         $this->assertFalse($response->getRetryIfPossible());
         $this->assertSame('confirmed', $response->getCode());
         $this->assertSame('confirmed', $response->getStatus());
@@ -294,26 +305,32 @@ class RedirectFlowGatewayTest extends GatewayTestCase
 
     public function testCompletePurchaseNoMandateId()
     {
-        // successfull run complete redirect flow and then run purchase
-        $this->setMockHttpResponse('RedirectFlowResponseSuccess.txt');
+        // successfully run complete redirect flow and then run purchase
+        $this->setMockHttpResponse([
+            'RedirectCompleteFlowResponseSuccess.txt',
+            'PurchaseResponseSuccess.txt',
+        ]);
         $options = [
-            'card'         => $this->getValidCard(),
-            'description'  => 'Wine boxes',
-            'amount'       => 500,
-            'currency'     => 'GBP',
-            'returnUrl'    => 'https://example.com/pay/confirm',
-            'sessionToken' => 'SESS_wSs0uGYMISxzqOBq'
+            'card'           => $this->getValidCard(),
+            'description'    => 'Wine boxes',
+            'amount'         => 500,
+            'currency'       => 'GBP',
+            'returnUrl'      => 'https://example.com/pay/confirm',
+            'redirectFlowId' => 'RE123',
+            'sessionToken'   => 'SESS_wSs0uGYMISxzqOBq'
         ];
 
-        $response = $this->gateway->purchase($options)->send();
+        $response = $this->gateway->completePurchase($options)->send();
 
-        $this->assertFalse($response->isSuccessful());
-        $this->assertTrue($response->isRedirect());
-        $this->assertSame('RE123', $response->getTransactionReference());
+        $this->assertTrue($response->isSuccessful());
+        $this->assertFalse($response->isRedirect());
+        $this->assertSame('PM123', $response->getTransactionReference());
         $this->assertNull($response->getMessage());
-        $this->assertSame('http://pay.gocardless.com/flow/RE123', $response->getRedirectUrl());
-        $this->assertSame('GET', $response->getRedirectMethod());
-        $this->assertNull($response->getRedirectData());
+    }
+
+    public function testCompletePurchaseNoMandateIdFailedRedirectFlow()
+    {
+        // @todo
     }
 
     public function testAcceptNotification()

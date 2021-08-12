@@ -1,0 +1,111 @@
+<?php
+
+namespace Omnipay\GoCardless\Message;
+
+use ReflectionClass;
+use Money\Currency;
+use Money\Money;
+use Omnipay\Tests\TestCase;
+
+class PurchaseRequestTest extends TestCase
+{
+    /** @var PurchaseRequest */
+    private $request;
+
+    /** @var mixed[]  Data to initialize the request with */
+    private $options;
+
+    public function setUp()
+    {
+        $this->request = new PurchaseRequest($this->getHttpClient(), $this->getHttpRequest());
+        $this->options = array(
+            'amount'        => '5.43',
+            'charge_date'   => "2014-05-19",
+            'currency'      => 'GBP',
+            'description'   => 'Wine boxes',
+            'mandateId'     => 'MD123',
+            'metadata'      => ["order_dispatch_date" => "2014-05-22"],
+            'returnUrl'     => 'https://example.com/pay/confirm',
+            'sessionToken'  => 'SESS_wSs0uGYMISxzqOBq',
+            'transactionId' => 'WINEBOX001',
+            "retry_if_possible" => false,
+            "customPaymentReferencesEnabled" => false,
+        );
+        $this->request->initialize($this->options);
+    }
+
+    public function testAccessors()
+    {
+        $this->assertSame('MD123', $this->request->getMandateId());
+        $this->assertNull($this->request->getAppFeeAmount());
+        $this->assertNull($this->request->getAppFeeAmountInteger());
+        $this->assertSame('2014-05-19', $this->request->getChargeDate());
+        $this->assertSame(["order_dispatch_date" => "2014-05-22"], $this->request->getMetaData());
+        $this->assertFalse($this->request->getRetryIfPossible());
+        $this->assertFalse($this->request->getCustomPaymentReferencesEnabled());
+        // @todo all permutations
+        $this->assertNull($this->request->getTransactionId());
+    }
+
+    public function testAmounts()
+    {
+        // override some data
+        $options = array_merge(
+            $this->options,
+            array('amount' => '1.00', 'appFeeAmount' => '0.10')
+        );
+        $this->request->initialize($options);
+
+        $this->assertSame('1.00', $this->request->getAmount());
+        $this->assertSame(100, $this->request->getAmountInteger());
+        $this->assertSame('0.10', $this->request->getAppFeeAmount());
+        $this->assertSame(10, $this->request->getAppFeeAmountInteger());
+    }
+
+    public function testIntAmounts()
+    {
+        // override some data
+        $options = array_merge(
+            $this->options,
+            array('amount' => 100, 'appFeeAmount' => 10)
+        );
+        $this->request->initialize($options);
+
+        $this->assertSame('100.00', $this->request->getAmount());
+        $this->assertSame(10000, $this->request->getAmountInteger());
+        $this->assertSame('10.00', $this->request->getAppFeeAmount());
+        $this->assertSame(1000, $this->request->getAppFeeAmountInteger());
+    }
+
+    /**
+     * This test is slightly different as we need to expose the protected method
+     */
+    public function testGetAppFeeMoney()
+    {
+        // override some data
+        $options = array_merge(
+            $this->options,
+            array('amount' => null)
+        );
+        $this->request->initialize($options);
+
+        $class = new ReflectionClass(get_class($this->request));
+        $method = $class->getMethod('getAppFeeMoney');
+        $method->setAccessible(true);
+
+        $currency = new Currency($this->request->getCurrency());
+
+        $this->assertNull($method->invoke($this->request, null));
+        $this->assertSame('{"amount":"100","currency":"GBP"}', json_encode($method->invoke($this->request, new Money(100, $currency))));
+        $this->assertSame('{"amount":"200","currency":"GBP"}', json_encode($method->invoke($this->request, 200)));
+        $this->assertSame('{"amount":"300","currency":"GBP"}', json_encode($method->invoke($this->request, '3.00')));
+    }
+
+    public function testGetData()
+    {
+        $data = $this->request->getData();
+
+        // @todo
+        // $this->assertSame('', $data['someindex']);
+    }
+}
