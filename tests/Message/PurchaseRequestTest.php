@@ -103,9 +103,23 @@ class PurchaseRequestTest extends TestCase
 
     public function testGetData()
     {
+        // override some data
+        $options = array_merge(
+            $this->options,
+            array('customPaymentReferencesEnabled' => true, 'appFeeAmount' => '0.10', 'retry_if_possible' => true)
+        );
+        $this->request->initialize($options);
         $data = $this->request->getData();
 
-        // @todo
-        // $this->assertSame('', $data['someindex']);
+        $this->assertSame(543, $data['amount']);
+        $this->assertSame('GBP', $data['currency']);
+        $this->assertSame(['mandate' => 'MD123'], $data['links']);
+        // Optional values
+        $this->assertSame(10, $data['app_fee']);
+        $this->assertSame('2014-05-19', $data['charge_date']);
+        $this->assertSame('Wine boxes', $data['description']);
+        $this->assertSame(['order_dispatch_date' => '2014-05-22'], $data['metadata']);
+        $this->assertSame('WINEBOX001', $data['reference']);
+        $this->assertTrue($data['retry_if_possible']);
     }
 }

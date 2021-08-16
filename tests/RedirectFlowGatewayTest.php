@@ -330,7 +330,26 @@ class RedirectFlowGatewayTest extends GatewayTestCase
 
     public function testCompletePurchaseNoMandateIdFailedRedirectFlow()
     {
-        // @todo
+      // redirect flow throws error and then run purchase
+      $this->setMockHttpResponse('RedirectCompleteFlowResponseFailedIncomplete.txt');
+      $options = [
+          'card'           => $this->getValidCard(),
+          'description'    => 'Wine boxes',
+          'amount'         => 500,
+          'currency'       => 'GBP',
+          'returnUrl'      => 'https://example.com/pay/confirm',
+          'redirectFlowId' => 'RE123',
+          'sessionToken'   => 'SESS_wSs0uGYMISxzqOBq'
+      ];
+
+      $response = $this->gateway->completePurchase($options)->send();
+
+      $this->assertFalse($response->isSuccessful());
+      $this->assertFalse($response->isRedirect());
+      $this->assertSame('Redirect flow incomplete', $response->getMessage());
+      $this->assertNull($response->getTransactionReference());
+      $this->assertNull($response->getRedirectUrl());
+      $this->assertNull($response->getMandateId());
     }
 
     public function testAcceptNotification()
