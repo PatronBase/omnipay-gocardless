@@ -20,6 +20,13 @@ class RedirectFlowResponse extends AbstractResponse implements RedirectResponseI
         return !isset($this->data['error']) && isset($this->data['redirect_flows']);
     }
 
+    public function getSessionToken()
+    {
+        if ($this->isRedirect()) {
+            return $this->data['redirect_flows']['session_token'];
+        }
+    }
+
     public function getTransactionReference()
     {
         if ($this->isRedirect()) {

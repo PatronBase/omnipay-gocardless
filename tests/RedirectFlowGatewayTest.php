@@ -41,9 +41,15 @@ class RedirectFlowGatewayTest extends GatewayTestCase
         $this->setMockHttpResponse('RedirectFlowResponseSuccess.txt');
         $options = [
             'card' => $this->getValidCard(),
-            'description'  => 'Wine boxes',
-            'returnUrl' => 'https://example.com/pay/confirm',
-            'sessionToken' => 'SESS_wSs0uGYMISxzqOBq',
+            'description'           => 'Wine boxes',
+            'returnUrl'             => 'https://example.com/pay/confirm',
+            'sessionToken'          => 'SESS_wSs0uGYMISxzqOBq',
+            'language'              => 'eng',
+            'accountType'           => 'GoCardless',
+            'scheme'                => 'default',
+            'swedishIdentityNumber' => '1234',
+            'danishIdentityNumber'  => '5678',
+            'creditorId'            => 'CR123'
         ];
 
         $response = $this->gateway->redirectFlow($options)->send();
@@ -51,6 +57,7 @@ class RedirectFlowGatewayTest extends GatewayTestCase
         $this->assertFalse($response->isSuccessful());
         $this->assertTrue($response->isRedirect());
         $this->assertSame('RE123', $response->getTransactionReference());
+        $this->assertSame('SESS_wSs0uGYMISxzqOBq', $response->getSessionToken());
         $this->assertNull($response->getMessage());
         $this->assertSame('http://pay.gocardless.com/flow/RE123', $response->getRedirectUrl());
         $this->assertSame('GET', $response->getRedirectMethod());
@@ -79,7 +86,7 @@ class RedirectFlowGatewayTest extends GatewayTestCase
         $this->setMockHttpResponse('RedirectCompleteFlowResponseSuccess.txt');
         $options = [
             'redirectFlowId' => 'RE123',
-            'sessionToken' => 'SESS_wSs0uGYMISxzqOBq',
+            'sessionToken'   => 'SESS_wSs0uGYMISxzqOBq',
         ];
 
         $response = $this->gateway->completeRedirectFlow($options)->send();
@@ -99,7 +106,7 @@ class RedirectFlowGatewayTest extends GatewayTestCase
         $this->setMockHttpResponse('RedirectCompleteFlowResponseError.txt');
         $options = [
             'redirectFlowId' => 'RE123',
-            'sessionToken' => 'SESS_wSs0uGYMISxzqOBq',
+            'sessionToken'   => 'SESS_wSs0uGYMISxzqOBq',
         ];
 
         $response = $this->gateway->completeRedirectFlow($options)->send();
@@ -149,8 +156,8 @@ class RedirectFlowGatewayTest extends GatewayTestCase
         $this->assertSame(0, $response->getAmountRefunded());
         $this->assertSame(
             [
-                "fx_currency" => "EUR",
-                "fx_amount" => null,
+                "fx_currency"   => "EUR",
+                "fx_amount"     => null,
                 "exchange_rate" => null,
                 "estimated_exchange_rate" => "1.1234567890"
             ],
@@ -345,7 +352,7 @@ class RedirectFlowGatewayTest extends GatewayTestCase
       $response = $this->gateway->completePurchase($options)->send();
 
       $this->assertFalse($response->isSuccessful());
-      $this->assertFalse($response->isRedirect());
+      $this->assertTrue($response->isRedirect());
       $this->assertSame('Redirect flow incomplete', $response->getMessage());
       $this->assertNull($response->getTransactionReference());
       $this->assertNull($response->getRedirectUrl());
@@ -424,6 +431,16 @@ class RedirectFlowGatewayTest extends GatewayTestCase
         $this->assertNull($request->getMetaData());
         $this->assertSame('payouts', $request->getType());
         $this->assertNull($request->getPaymentId());
+    }
+
+    public function testAcceptNotificationPayoutsNoData()
+    {
+        $httpRequest = $this->setMockHttpRequest('WebhookNotificationEmpty.txt');
+        $gateway = new RedirectFlowGateway($this->getHttpClient(), $httpRequest);
+
+        $request = $gateway->acceptNotificationBatch();
+
+        $this->assertEmpty($request->getNotifications());
     }
 
     public function testAcceptNotificationBatch()
