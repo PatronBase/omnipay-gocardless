@@ -23,6 +23,22 @@ class PurchaseRequest extends AbstractRequest
         return $this->setParameter('mandateId', $value);
     }
 
+    /**
+     * Treat mandate as a 'card' to support createCard pattern
+     */
+    public function getCardReference()
+    {
+        return $this->getMandateId();
+    }
+
+    /**
+     * Treat mandate as a 'card' to support createCard pattern
+     */
+    public function setCardReference($value)
+    {
+        return $this->setMandateId($value);
+    }
+
     public function getAppFeeAmount()
     {
         $money = $this->getAppFeeMoney();

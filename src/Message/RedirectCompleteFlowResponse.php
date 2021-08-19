@@ -57,4 +57,12 @@ class RedirectCompleteFlowResponse extends AbstractResponse implements RedirectR
             return $this->data['redirect_flows']['links']['mandate'];
         }
     }
+
+    /**
+     * Treat mandate as a 'card' to support createCard pattern
+     */
+    public function getCardReference()
+    {
+        return $this->getMandateId();
+    }
 }

@@ -58,6 +58,14 @@ class PurchaseResponse extends AbstractResponse
         }
     }
 
+    /**
+     * Treat mandate as a 'card' to support createCard pattern
+     */
+    public function getCardReference()
+    {
+        return $this->getMandateId();
+    }
+
     public function getMetaData()
     {
         if ($this->isSuccessful() || $this->isPending()) {
