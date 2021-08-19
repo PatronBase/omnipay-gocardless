@@ -37,6 +37,7 @@ class PurchaseRequestTest extends TestCase
     public function testAccessors()
     {
         $this->assertSame('MD123', $this->request->getMandateId());
+        $this->assertSame('MD123', $this->request->getCardReference());
         $this->assertNull($this->request->getAppFeeAmount());
         $this->assertNull($this->request->getAppFeeAmountInteger());
         $this->assertSame('2014-05-19', $this->request->getChargeDate());
@@ -99,6 +100,10 @@ class PurchaseRequestTest extends TestCase
         $this->assertSame('{"amount":"100","currency":"GBP"}', json_encode($method->invoke($this->request, new Money(100, $currency))));
         $this->assertSame('{"amount":"200","currency":"GBP"}', json_encode($method->invoke($this->request, 200)));
         $this->assertSame('{"amount":"300","currency":"GBP"}', json_encode($method->invoke($this->request, '3.00')));
+
+        json_encode($method->invoke($this->request, '3.005'));
+        $this->expectException(InvalidRequestException::class);
+        $this->expectExceptionMessage('Amount precision is too high for currency');
     }
 
     public function testGetData()

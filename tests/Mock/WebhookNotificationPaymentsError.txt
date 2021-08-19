@@ -5,5 +5,7 @@ Content-Type: application/json
 Webhook-Signature: 42aa2860ecb559d16f9ecbe7e590ffeee2a992a03008be1deca22d97865693a7
 
 {
-
+  "meta":{
+    "webhook_id":"WB123"
+  }
 }
