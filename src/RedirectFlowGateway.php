@@ -30,13 +30,33 @@ class RedirectFlowGateway extends AbstractGateway
 
     // @todo authorize?
     // @todo completeAuthorize?
-    // @todo createCard?
-    // @todo completeCreateCard?
 
     /**
-     * Complete Redirect Flow
+     * Begin Redirect flow
      *
-     * @todo could this alias to createCard()?
+     * Treats a mandate as a 'card'
+     * 
+     * @return RedirectFlowRequest
+     */
+    public function createCard(array $parameters = array())
+    {
+        return $this->redirectFlow($parameters);
+    }
+
+    /**
+     * Complete Redirect flow
+     *
+     * Treats a mandate as a 'card'
+     *
+     * @return RedirectCompleteFlowRequest
+     */
+    public function completeCreateCard(array $parameters = array())
+    {
+        return $this->completeRedirectFlow($parameters);
+    }
+
+    /**
+     * Begin Redirect Flow
      *
      * @return RedirectFlowRequest
      */
