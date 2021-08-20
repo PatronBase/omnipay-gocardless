@@ -14,11 +14,17 @@ class RedirectFlowRequest extends AbstractRequest
         return $this->setParameter('sessionToken', $value);
     }
 
+    /**
+     * Only for USD-denominated bank accounts
+     */
     public function getAccountType()
     {
         return $this->getParameter('accountType');
     }
 
+    /**
+     * Only for USD-denominated bank accounts
+     */
     public function setAccountType($value)
     {
         return $this->setParameter('accountType', $value);
@@ -132,7 +138,7 @@ class RedirectFlowRequest extends AbstractRequest
                  // phone number is for New Zealand customers only
                 'phone_number' => $card->getCountry() == 'NZ' ? $card->getPhone() : null,
             ];
-            if ($card->getLastName() == null && $card->getLastName() == null) {
+            if ($card->getFirstName() == null && $card->getLastName() == null) {
                 $prefilledCustomer['company_name'] = $card->getCompany();
             }
         }

@@ -2,14 +2,11 @@
 
 namespace Omnipay\GoCardless;
 
-use Omnipay\Common\Exception\RuntimeException;
 use Omnipay\GoCardless\AbstractGateway;
 use Omnipay\GoCardless\Message\FetchEventRequest;
 use Omnipay\GoCardless\Message\FetchPurchaseRequest;
 use Omnipay\GoCardless\Message\RedirectCompleteFlowRequest;
-use Omnipay\GoCardless\Message\RedirectCompleteFlowResponse;
 use Omnipay\GoCardless\Message\RedirectFlowRequest;
-use Omnipay\GoCardless\Message\RedirectFlowResponse;
 use Omnipay\GoCardless\Message\PurchaseRequest;
 use Omnipay\GoCardless\Message\WebhookEventNotification;
 use Omnipay\GoCardless\Message\WebhookNotification;
@@ -21,13 +18,6 @@ class RedirectFlowGateway extends AbstractGateway
         return 'GoCardless Redirect Flow';
     }
 
-    // @todo note: might need to do this/add redirectFlowId accessors in order to get superclass unit tests working
-    //             but can focus on those after getting the core tests done
-    // public function getDefaultParameters()
-    // {
-    //     return parent::getDefaultParameters() + ['redirectFlowId' => null];
-    // }
-
     // @todo authorize?
     // @todo completeAuthorize?
 
@@ -35,7 +25,7 @@ class RedirectFlowGateway extends AbstractGateway
      * Begin Redirect flow
      *
      * Treats a mandate as a 'card'
-     * 
+     *
      * @return RedirectFlowRequest
      */
     public function createCard(array $parameters = array())
@@ -91,15 +81,16 @@ class RedirectFlowGateway extends AbstractGateway
     /**
      * Extract the mandate from a completed redirect flow, then make a payment
      *
-     * @return RedirectCompleteFlowReponse|PurchaseRequest
+     * @return RedirectCompleteFlowRequest|PurchaseRequest
      */
     public function completePurchase(array $parameters = array())
     {
         if (empty($parameters['mandateId'])) {
             $flowResponse = $this->completeRedirectFlow($parameters)->send();
             if (!$flowResponse->isSuccessful()) {
-                // @todo change to use `->getRequest()` so it can be re-tried by calling application?
-                return $flowResponse;
+                // returning request so it can be re-tried by calling application if need be
+                // the originally returned response is still accessible via getResponse()
+                return $flowResponse->getRequest();
             }
             $parameters['mandateId'] = $flowResponse->getMandateId();
         }

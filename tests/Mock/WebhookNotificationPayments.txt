@@ -2,42 +2,6 @@ POST https://example.com/webhooks HTTP/1.1
 User-Agent: gocardless-webhook-service/1.1
 Origin: https://api-sandbox.gocardless.com
 Content-Type: application/json
-Webhook-Signature: 8d625e2359a8a2f9161e0ec9a534a9f75c47aa7b305b18685929ad58f08d2efc
+Webhook-Signature: 3c8688afc5e7a714350b3674880416b481fb59e68c0090a7c33e92ddcf0f3126
 
-{
-    "events": [
-      {
-        "id":"EV123",
-        "created_at":"2014-08-03T12:00:00.000Z",
-        "action":"confirmed",
-        "resource_type":"payments",
-        "links":{
-          "payment":"PM123"
-        },
-        "details":{
-          "origin":"gocardless",
-          "cause":"payment_confirmed",
-          "description":"Payment was confirmed as collected"
-        }
-      },
-      {
-        "id":"EV456",
-        "created_at":"2014-08-03T12:00:00.000Z",
-        "action":"failed",
-        "resource_type":"payments",
-        "links":{
-          "payment":"PM456"
-        },
-        "details":{
-          "origin":"bank",
-          "cause":"mandate_cancelled",
-          "description":"Customer cancelled the mandate at their bank branch.",
-          "scheme":"bacs",
-          "reason_code":"ARUDD-1"
-        }
-      }
-    ],
-    "meta":{
-      "webhook_id":"WB123"
-    }
-}
+{"events":[{"id":"EV123","created_at":"2014-08-03T12:00:00.000Z","action":"confirmed","resource_type":"payments","links":{"payment":"PM123"},"details":{"origin":"gocardless","cause":"payment_confirmed","description":"Payment was confirmed as collected"}},{"id":"EV456","created_at":"2014-08-03T12:00:00.000Z","action":"failed","resource_type":"payments","links":{"payment":"PM456"},"details":{"origin":"bank","cause":"mandate_cancelled","description":"Customer cancelled the mandate at their bank branch.","scheme":"bacs","reason_code":"ARUDD-1"}},{"id":"EV789","created_at":"2014-08-03T12:00:00.000Z","action":"created","resource_type":"payments","links":{"payment":"PM789"},"details":{"origin":"api","cause":"payment_created","description":"Payment created via the API."},"metadata":[]},{"id":"EV000","created_at":"2014-08-03T12:00:00.000Z","action":"surcharge_fee_debited","resource_type":"payments","links":{"payment":"PM000"},"details":{"origin":"gocardless","cause":"payment_surcharge_fee_debited","description":"Surcharge fee confirmed as debited."}}],"meta":{"webhook_id":"WB123"}}

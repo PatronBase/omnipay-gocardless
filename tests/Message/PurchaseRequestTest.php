@@ -5,6 +5,7 @@ namespace Omnipay\GoCardless\Message;
 use ReflectionClass;
 use Money\Currency;
 use Money\Money;
+use Omnipay\Common\Exception\InvalidRequestException;
 use Omnipay\Tests\TestCase;
 
 class PurchaseRequestTest extends TestCase
@@ -46,6 +47,19 @@ class PurchaseRequestTest extends TestCase
         $this->assertFalse($this->request->getCustomPaymentReferencesEnabled());
         // @todo all permutations
         $this->assertNull($this->request->getTransactionId());
+    }
+
+    public function testCardReferenceInsteadOfMandateId()
+    {
+        // override some data
+        $options = array_merge(
+            $this->options,
+            array('mandateId' => null, 'cardReference' => 'MD123')
+        );
+        $this->request->initialize($options);
+
+        $this->assertSame('MD123', $this->request->getMandateId());
+        $this->assertSame('MD123', $this->request->getCardReference());
     }
 
     public function testAmounts()
@@ -97,13 +111,76 @@ class PurchaseRequestTest extends TestCase
         $currency = new Currency($this->request->getCurrency());
 
         $this->assertNull($method->invoke($this->request, null));
-        $this->assertSame('{"amount":"100","currency":"GBP"}', json_encode($method->invoke($this->request, new Money(100, $currency))));
-        $this->assertSame('{"amount":"200","currency":"GBP"}', json_encode($method->invoke($this->request, 200)));
-        $this->assertSame('{"amount":"300","currency":"GBP"}', json_encode($method->invoke($this->request, '3.00')));
+        $this->assertSame(
+            '{"amount":"100","currency":"GBP"}',
+            json_encode($method->invoke($this->request, new Money(100, $currency)))
+        );
+        $this->assertSame(
+            '{"amount":"200","currency":"GBP"}',
+            json_encode($method->invoke($this->request, 200))
+        );
+        $this->assertSame(
+            '{"amount":"300","currency":"GBP"}',
+            json_encode($method->invoke($this->request, '3.00'))
+        );
+    }
 
-        json_encode($method->invoke($this->request, '3.005'));
+    public function testGetAppFeeMoneyPrecisionError()
+    {
+        // override some data
+        $options = array_merge(
+            $this->options,
+            array('amount' => null)
+        );
+        $this->request->initialize($options);
+
+        $class = new ReflectionClass(get_class($this->request));
+        $method = $class->getMethod('getAppFeeMoney');
+        $method->setAccessible(true);
+
         $this->expectException(InvalidRequestException::class);
         $this->expectExceptionMessage('Amount precision is too high for currency');
+        $method->invoke($this->request, '3.005');
+    }
+
+    public function testGetAppFeeMoneyNegative()
+    {
+        // override some data
+        $options = array_merge(
+            $this->options,
+            array('amount' => null)
+        );
+        $this->request->initialize($options);
+
+        $class = new ReflectionClass(get_class($this->request));
+        $method = $class->getMethod('getAppFeeMoney');
+        $method->setAccessible(true);
+
+        $this->expectException(InvalidRequestException::class);
+        $this->expectExceptionMessage('A negative amount is not allowed.');
+        $method->invoke($this->request, '-1.00');
+    }
+
+    public function testGetAppFeeMoneyZero()
+    {
+        // override some data
+        $options = array_merge(
+            $this->options,
+            array('amount' => null)
+        );
+        $this->request->initialize($options);
+
+        $class = new ReflectionClass(get_class($this->request));
+        $method = $class->getMethod('getAppFeeMoney');
+        $method->setAccessible(true);
+        $property = $class->getProperty('zeroAmountAllowed');
+        $property->setAccessible(true);
+
+        $property->setValue($this->request, false);
+
+        $this->expectException(InvalidRequestException::class);
+        $this->expectExceptionMessage('A zero amount is not allowed.');
+        $method->invoke($this->request, '0.00');
     }
 
     public function testGetData()

@@ -66,13 +66,6 @@ class WebhookNotification extends AbstractRequest
     public function hasValidSignature($secret)
     {
         $supplied = $this->httpRequest->headers->get('Webhook-Signature');
-
-        // DEBUG: strip whitespace from body (minify JSON), including trailing newlines
-        // $rawBody = $this->httpRequest->getContent();
-        // $minified = json_encode(json_decode($rawBody));
-        // echo "\nSTART\n{$rawBody}\nSTOP\n";
-        // echo "\nSTART\n{$minified}\nSTOP\n";
-
         $calculated = hash_hmac('sha256', $this->httpRequest->getContent(), $secret);
         return $supplied === $calculated;
     }

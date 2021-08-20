@@ -7,6 +7,7 @@ use GuzzleHttp\Psr7\Message;
 use GuzzleHttp\Psr7\ServerRequest;
 use Omnipay\Common\Message\NotificationInterface;
 use Omnipay\GoCardless\Message\PurchaseResponse;
+use Omnipay\GoCardless\Message\RedirectCompleteFlowRequest;
 use Omnipay\GoCardless\Message\RedirectFlowRequest;
 use Omnipay\GoCardless\Message\WebhookEventNotification;
 use Omnipay\GoCardless\Message\WebhookNotification;
@@ -40,16 +41,10 @@ class RedirectFlowGatewayTest extends GatewayTestCase
     {
         $this->setMockHttpResponse('RedirectFlowResponseSuccess.txt');
         $options = [
-            'card' => $this->getValidCard(),
-            'description'           => 'Wine boxes',
-            'returnUrl'             => 'https://example.com/pay/confirm',
-            'sessionToken'          => 'SESS_wSs0uGYMISxzqOBq',
-            'language'              => 'eng',
-            'accountType'           => 'GoCardless',
-            'scheme'                => 'default',
-            'swedishIdentityNumber' => '1234',
-            'danishIdentityNumber'  => '5678',
-            'creditorId'            => 'CR123'
+            'card'         => $this->getValidCard(),
+            'description'  => 'Wine boxes',
+            'returnUrl'    => 'https://example.com/pay/confirm',
+            'sessionToken' => 'SESS_wSs0uGYMISxzqOBq',
         ];
 
         $response = $this->gateway->redirectFlow($options)->send();
@@ -76,9 +71,22 @@ class RedirectFlowGatewayTest extends GatewayTestCase
 
         $this->assertFalse($response->isSuccessful());
         $this->assertFalse($response->isRedirect());
+        $this->assertNull($response->getSessionToken());
         $this->assertNull($response->getTransactionReference());
         $this->assertSame('Invalid document structure', $response->getMessage());
         $this->assertNull($response->getRedirectUrl());
+    }
+
+    public function testCompleteCreateCard()
+    {
+        $options = [
+            'redirectFlowId' => 'RE123',
+            'sessionToken'   => 'SESS_wSs0uGYMISxzqOBq',
+        ];
+
+        $request = $this->gateway->completeCreateCard($options);
+
+        $this->assertInstanceOf(RedirectCompleteFlowRequest::class, $request);
     }
 
     public function testCompleteRedirectFlow()
@@ -99,6 +107,7 @@ class RedirectFlowGatewayTest extends GatewayTestCase
         $this->assertSame('GET', $response->getRedirectMethod());
         $this->assertNull($response->getRedirectData());
         $this->assertSame('MD123', $response->getMandateId());
+        $this->assertSame('MD123', $response->getCardReference());
     }
 
     public function testCompleteRedirectFlowError()
@@ -117,6 +126,7 @@ class RedirectFlowGatewayTest extends GatewayTestCase
         $this->assertNull($response->getTransactionReference());
         $this->assertNull($response->getRedirectUrl());
         $this->assertNull($response->getMandateId());
+        $this->assertNull($response->getCardReference());
     }
 
     public function testPurchase()
@@ -207,6 +217,7 @@ class RedirectFlowGatewayTest extends GatewayTestCase
         );
         $this->assertNull($response->getDescription());
         $this->assertNull($response->getMessage());
+        $this->assertNull($response->getErrors());
         $this->assertNull($response->getMandateId());
         $this->assertSame('cancelled', $response->getCode());
     }
@@ -236,9 +247,15 @@ class RedirectFlowGatewayTest extends GatewayTestCase
         $this->assertFalse($response->isRedirect());
         $this->assertTrue($response->isError());
         $this->assertNull($response->getTransactionReference());
+        $this->assertNull($response->getChargeDate());
+        $this->assertNull($response->getAmount());
+        $this->assertNull($response->getCurrency());
         $this->assertSame('One of your parameters was incorrectly typed', $response->getMessage());
         $this->assertNotNull($response->getErrors());
         $this->assertNull($response->getMandateId());
+        $this->assertNull($response->getCardReference());
+        $this->assertNull($response->getAmountRefunded());
+        $this->assertNull($response->getFx());
         $this->assertNull($response->getMetaData());
         $this->assertSame('422', $response->getCode());
         $this->assertSame('invalid_api_usage', $response->getStatus());
@@ -332,26 +349,30 @@ class RedirectFlowGatewayTest extends GatewayTestCase
 
     public function testCompletePurchaseNoMandateIdFailedRedirectFlow()
     {
-      // redirect flow throws error and then run purchase
-      $this->setMockHttpResponse('RedirectCompleteFlowResponseFailedIncomplete.txt');
-      $options = [
-          'card'           => $this->getValidCard(),
-          'description'    => 'Wine boxes',
-          'amount'         => 500,
-          'currency'       => 'GBP',
-          'returnUrl'      => 'https://example.com/pay/confirm',
-          'redirectFlowId' => 'RE123',
-          'sessionToken'   => 'SESS_wSs0uGYMISxzqOBq'
-      ];
+        // redirect flow throws error and then run purchase (twice to pick up extra send() call in test)
+        $this->setMockHttpResponse([
+            'RedirectCompleteFlowResponseFailedIncomplete.txt',
+            'RedirectCompleteFlowResponseFailedIncomplete.txt',
+        ]);
+        $options = [
+            'card'           => $this->getValidCard(),
+            'description'    => 'Wine boxes',
+            'amount'         => 500,
+            'currency'       => 'GBP',
+            'returnUrl'      => 'https://example.com/pay/confirm',
+            'redirectFlowId' => 'RE123',
+            'sessionToken'   => 'SESS_wSs0uGYMISxzqOBq'
+        ];
 
-      $response = $this->gateway->completePurchase($options)->send();
+        // could drop 'send' and end up with same results
+        $response = $this->gateway->completePurchase($options)->send();
 
-      $this->assertFalse($response->isSuccessful());
-      $this->assertTrue($response->isRedirect());
-      $this->assertSame('Redirect flow incomplete', $response->getMessage());
-      $this->assertNull($response->getTransactionReference());
-      $this->assertNull($response->getRedirectUrl());
-      $this->assertNull($response->getMandateId());
+        $this->assertFalse($response->isSuccessful());
+        $this->assertFalse($response->isRedirect());
+        $this->assertSame('Customer has not yet completed the payment pages', $response->getMessage());
+        $this->assertNull($response->getTransactionReference());
+        $this->assertNull($response->getRedirectUrl());
+        $this->assertNull($response->getMandateId());
     }
 
     public function testAcceptNotification()
@@ -405,6 +426,52 @@ class RedirectFlowGatewayTest extends GatewayTestCase
         $this->assertSame('PM456', $request->getPaymentId());
     }
 
+    public function testAcceptNotificationPending()
+    {
+        $httpRequest = $this->setMockHttpRequest('WebhookNotificationPayments.txt');
+        $gateway = new RedirectFlowGateway($this->getHttpClient(), $httpRequest);
+
+        $request = $gateway->acceptNotificationBatch();
+
+        $notifications = $request->getNotifications();
+        $data = $notifications[2];
+        $request = $gateway->acceptNotification(['notification' => $data]);
+
+        $this->assertSame($data, $request->getData());
+        $this->assertSame('created', $request->getAction());
+        $this->assertSame('payment_created', $request->getCode());
+        $this->assertSame('api', $request->getEventOrigin());
+        $this->assertSame('Payment created via the API.', $request->getMessage());
+        $this->assertSame('EV789', $request->getTransactionReference());
+        $this->assertSame(NotificationInterface::STATUS_PENDING, $request->getTransactionStatus());
+        $this->assertEmpty($request->getMetaData());
+        $this->assertSame('payments', $request->getType());
+        $this->assertSame('PM789', $request->getPaymentId());
+    }
+
+    public function testAcceptNotificationNoStateChange()
+    {
+        $httpRequest = $this->setMockHttpRequest('WebhookNotificationPayments.txt');
+        $gateway = new RedirectFlowGateway($this->getHttpClient(), $httpRequest);
+
+        $request = $gateway->acceptNotificationBatch();
+
+        $notifications = $request->getNotifications();
+        $data = $notifications[3];
+        $request = $gateway->acceptNotification(['notification' => $data]);
+
+        $this->assertSame($data, $request->getData());
+        $this->assertSame('surcharge_fee_debited', $request->getAction());
+        $this->assertSame('payment_surcharge_fee_debited', $request->getCode());
+        $this->assertSame('gocardless', $request->getEventOrigin());
+        $this->assertSame('Surcharge fee confirmed as debited.', $request->getMessage());
+        $this->assertSame('EV000', $request->getTransactionReference());
+        $this->assertNull($request->getTransactionStatus());
+        $this->assertNull($request->getMetaData());
+        $this->assertSame('payments', $request->getType());
+        $this->assertSame('PM000', $request->getPaymentId());
+    }
+
     public function testAcceptNotificationPayouts()
     {
         $httpRequest = $this->setMockHttpRequest('WebhookNotificationPayouts.txt');
@@ -425,6 +492,24 @@ class RedirectFlowGatewayTest extends GatewayTestCase
         $this->assertNull($request->getTransactionStatus());
         $this->assertNull($request->getMetaData());
         $this->assertSame('payouts', $request->getType());
+        $this->assertNull($request->getPaymentId());
+    }
+
+    public function testAcceptNotificationInvalid()
+    {
+        $data = ['invalid' => 'data provided'];
+
+        $request = $this->gateway->acceptNotification(['notification' => $data]);
+
+        $this->assertSame($data, $request->getData());
+        $this->assertNull($request->getAction());
+        $this->assertNull($request->getCode());
+        $this->assertNull($request->getEventOrigin());
+        $this->assertNull($request->getMessage());
+        $this->assertNull($request->getTransactionReference());
+        $this->assertNull($request->getTransactionStatus());
+        $this->assertNull($request->getMetaData());
+        $this->assertNull($request->getType());
         $this->assertNull($request->getPaymentId());
     }
 
@@ -467,12 +552,41 @@ class RedirectFlowGatewayTest extends GatewayTestCase
                     'reason_code' => 'ARUDD-1',
                 ],
             ],
+            [
+                "id" => "EV789",
+                "created_at" => "2014-08-03T12:00:00.000Z",
+                "action" => "created",
+                "resource_type" => "payments",
+                "links" => [
+                    "payment" => "PM789",
+                ],
+                "details" => [
+                    "origin" => "api",
+                    "cause" => "payment_created",
+                    "description" => "Payment created via the API.",
+                ],
+                "metadata" => [],
+            ],
+            [
+                "id" => "EV000",
+                "created_at" => "2014-08-03T12:00:00.000Z",
+                "action" => "surcharge_fee_debited",
+                "resource_type" => "payments",
+                "links" => [
+                    "payment" => "PM000",
+                ],
+                "details" => [
+                    "origin" => "gocardless",
+                    "cause" => "payment_surcharge_fee_debited",
+                    "description" => "Surcharge fee confirmed as debited.",
+                ],
+            ],
         ];
 
         $this->assertInstanceOf(WebhookNotification::class, $request);
         $this->assertInstanceOf(WebhookNotification::class, $response);
         $this->assertSame($request, $response);
-        $this->assertFalse($request->hasValidSignature('123ABC456DEF'));
+        $this->assertTrue($request->hasValidSignature('123ABC456DEF'));
         $this->assertFalse($request->hasValidSignature('thewrongsecret'));
         $this->assertSame($events, $request->getNotifications());
         $this->assertSame("WB123", $request->getWebhookId());
@@ -481,9 +595,8 @@ class RedirectFlowGatewayTest extends GatewayTestCase
 
     public function testAcceptNotificationBatchError()
     {
-        // @todo write mock to pass this test
-        $httpRequest = $this->setMockHttpRequest('WebhookNotificationPaymentsError.txt');
-        $gateway = new RedirectFlowGateway($this->getHttpClient(), $httpRequest);
+        $this->setMockHttpRequest('WebhookNotificationPaymentsError.txt');
+        $gateway = new RedirectFlowGateway($this->getHttpClient(), $this->getHttpRequest());
 
         $request = $gateway->acceptNotificationBatch();
 
@@ -518,6 +631,23 @@ class RedirectFlowGatewayTest extends GatewayTestCase
 
         $this->assertInstanceOf(WebhookEventNotification::class, $response);
         $this->assertSame([], $response->getMetaData());
+    }
+
+    /**
+     * Overrides the GatewayTestCase version due to the auto-processing
+     */
+    public function testSupportsCompletePurchase()
+    {
+        $this->assertTrue($this->gateway->supportsCompletePurchase());
+    }
+
+    /**
+     * Overrides the GatewayTestCase version due to the auto-processing
+     * @doesNotPerformAssertions
+     */
+    public function testCompletePurchaseParameters()
+    {
+        // empty
     }
 
     /**
