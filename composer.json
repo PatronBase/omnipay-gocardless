@@ -36,7 +36,7 @@
         }
     },
     "require": {
-        "omnipay/common": "dev-address3-support",
+        "omnipay/common": "dev-add-third-address-line-support",
         "php": "^5.5|^7|^8"
     },
     "require-dev": {
@@ -47,7 +47,7 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/CodeDruids/omnipay-common"
+            "url": "https://github.com/PatronBase/omnipay-common"
         },
         {
             "type": "vcs",
@@ -56,7 +56,7 @@
     ],
     "extra": {
         "branch-alias": {
-            "dev-master": "3.0.x-dev"
+            "dev-master": "3.1.x-dev"
         }
     },
     "prefer-stable": true
