@@ -36,7 +36,7 @@
         }
     },
     "require": {
-        "omnipay/common": "add-third-address-line-support",
+        "omnipay/common": "dev-add-third-address-line-support",
         "php": "^7|^8"
     },
     "require-dev": {
