@@ -36,8 +36,8 @@
         }
     },
     "require": {
-        "omnipay/common": "~3.3",
-        "php": "^5.5|^7|^8"
+        "omnipay/common": "add-third-address-line-support",
+        "php": "^7|^8"
     },
     "require-dev": {
         "omnipay/tests": "dev-address3-support",
@@ -45,6 +45,10 @@
         "symfony/psr-http-message-bridge": "~1.1.0"
     },
     "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/PatronBase/omnipay-common"
+        },
         {
             "type": "vcs",
             "url": "https://github.com/CodeDruids/omnipay-tests"
