@@ -47,16 +47,16 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/CodeDruids/omnipay-common"
+            "url": "https://github.com/PatronBase/omnipay-common"
         },
         {
             "type": "vcs",
-            "url": "https://github.com/CodeDruids/omnipay-tests"
+            "url": "https://github.com/PatronBase/omnipay-tests"
         }
     ],
     "extra": {
         "branch-alias": {
-            "dev-master": "3.0.x-dev"
+            "dev-master": "3.1.x-dev"
         }
     },
     "prefer-stable": true
